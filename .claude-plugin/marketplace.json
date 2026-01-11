@@ -1,0 +1,37 @@
+{
+  "name": "vibe-context",
+  "owner": {
+    "name": "vibe_context"
+  },
+  "metadata": {
+    "description": "Skills for building mini SaaS products",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "claude-skiller",
+      "description": "Skill for creating Claude Code Skills with proper structure and best practices",
+      "source": "./plugins/claude-skiller",
+      "strict": false,
+      "skills": [
+        "./skills/skill-creator"
+      ]
+    },
+    {
+      "name": "ai-engineer",
+      "description": "Use for OpenAI, GPT, LLM extraction, structured output, async AI pipelines. Load before writing AI code.",
+      "source": "./plugins/ai-engineer",
+      "strict": false,
+      "skills": [
+        "./skills/openai-api"
+      ]
+    },
+    {
+      "name": "integrations",
+      "description": "Third-party services: databases, payments, monitoring, deployment",
+      "source": "./plugins/integrations",
+      "strict": false,
+      "skills": []
+    }
+  ]
+}
