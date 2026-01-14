@@ -19,12 +19,13 @@
     },
     {
       "name": "ai-engineer",
-      "description": "Use for OpenAI, GPT, LLM extraction, structured output, async AI pipelines, Google image generation, Nano Banana. Load before writing AI code.",
+      "description": "Use for OpenAI, GPT, LLM extraction, structured output, async AI pipelines, Google image generation, Nano Banana, Langfuse, LLM tracing. Load before writing AI code.",
       "source": "./plugins/ai-engineer",
       "strict": false,
       "skills": [
         "./skills/openai-api",
-        "./skills/google-image"
+        "./skills/google-image",
+        "./skills/llm-tracing"
       ]
     },
     {
