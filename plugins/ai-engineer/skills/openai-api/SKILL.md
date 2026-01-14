@@ -13,7 +13,7 @@ description: Use when task involves OpenAI, GPT, LLM extraction, structured outp
 - `client.chat.completions.create()` - use `client.responses.create()` or `client.responses.parse()`
 - `response_format` parameter - use `text.format` (raw API) or `text_format` (Python SDK)
 - prefer `openai.AsyncOpenAI()` when possible for better performance
-- avoid `messages` parameter - use `input` parameter with list of messages instead
+- avoid `messages` parameter - use `input` for user content, `instructions` for system prompt
 - Instructor library - use native Pydantic/Zod support
 
 ## Models
@@ -99,10 +99,8 @@ class CalendarEvent(BaseModel):
 async def extract_event(text: str) -> CalendarEvent:
     response = await client.responses.parse(
         model="gpt-5-mini",
-        input=[
-            {"role": "system", "content": "Extract the event information."},
-            {"role": "user", "content": text},
-        ],
+        instructions="Extract the event information.",
+        input=text,
         text_format=CalendarEvent,
     )
     return response.output_parsed  # Already a CalendarEvent instance
@@ -150,10 +148,8 @@ const CalendarEvent = z.object({
 
 const response = await client.responses.parse({
     model: "gpt-5-mini",
-    input: [
-        { role: "system", content: "Extract the event information." },
-        { role: "user", content: "Alice and Bob are going to a science fair on Friday." },
-    ],
+    instructions: "Extract the event information.",
+    input: "Alice and Bob are going to a science fair on Friday.",
     text: {
         format: zodTextFormat(CalendarEvent, "calendar_event"),
     },
@@ -226,10 +222,8 @@ class MathReasoning(BaseModel):
 async def solve_math(problem: str) -> MathReasoning:
     response = await client.responses.parse(
         model="gpt-5-mini",
-        input=[
-            {"role": "system", "content": "You are a math tutor. Guide through the solution step by step."},
-            {"role": "user", "content": problem},
-        ],
+        instructions="You are a math tutor. Guide through the solution step by step.",
+        input=problem,
         text_format=MathReasoning,
     )
     return response.output_parsed
@@ -262,42 +256,55 @@ response = await client.responses.create(
 
 ## Multi-turn Conversations
 
+### Using Conversations API (Recommended)
+
+```python
+# Create a persistent conversation object
+conversation = await client.conversations.create()
+
+# Use conversation ID across sessions/devices
+response = await client.responses.create(
+    model="gpt-5-mini",
+    input="What are the 5 Ds of dodgeball?",
+    conversation=conversation.id,
+)
+
+# Continue same conversation later
+response2 = await client.responses.create(
+    model="gpt-5-mini",
+    input="Which one is the most important?",
+    conversation=conversation.id,
+)
+```
+
 ### Using `previous_response_id`
 
 ```python
 response1 = await client.responses.create(
     model="gpt-5-mini",
-    input="What is Python?",
-    store=True,
+    input="Tell me a joke",
 )
 
 response2 = await client.responses.create(
     model="gpt-5-mini",
     previous_response_id=response1.id,
-    input="Give me an example",
-    store=True,
+    input="Explain why this is funny",
 )
 ```
+
+Note: `instructions` only applies to the current request. When using `previous_response_id`, instructions from previous turns are not included in context.
 
 ### Manual Context Management
 
 ```python
-context = [
-    {"role": "user", "content": "What is the capital of France?"}
-]
-
-response1 = await client.responses.create(
+# Build conversation history manually, the only exception to using role-based messages
+response = await client.responses.create(
     model="gpt-5-mini",
-    input=context,
-)
-
-# Append response output to context
-context.extend(response1.output)
-context.append({"role": "user", "content": "And its population?"})
-
-response2 = await client.responses.create(
-    model="gpt-5-mini",
-    input=context,
+    input=[
+        {"role": "user", "content": "What is the capital of France?"},
+        {"role": "assistant", "content": "The capital of France is Paris."},
+        {"role": "user", "content": "And its population?"},
+    ],
 )
 ```
 

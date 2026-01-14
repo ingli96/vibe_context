@@ -58,6 +58,7 @@ langfuse.flush()  # Always flush before process exits
 
 ## Python Option 2: Manual Tracing (Full Control)
 
+With auto-instrumentation enabled (Options 1 and 3), it's unnecessary duplication.
 Use when you need explicit control over what gets traced and custom metadata:
 
 ```python
